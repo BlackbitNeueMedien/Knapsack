@@ -38,17 +38,6 @@ trait CollectionTrait
     }
 
     /**
-     * Returns a lazy collection with items from all $collections passed as argument appended together
-     *
-     * @param \Traversable[]|array ...$collections
-     * @return Collection
-     */
-    public function concat(...$collections)
-    {
-        return concat($this, ...$collections);
-    }
-
-    /**
      * Returns collection where each item is changed to the output of executing $function on each key/item.
      *
      * @param callable $function
@@ -369,18 +358,6 @@ trait CollectionTrait
     }
 
     /**
-     * Returns a lazy collection of first item from first collection, first item from second, second from first and
-     * so on. Accepts any number of collections.
-     *
-     * @param array|\Traversable ...$collections
-     * @return Collection
-     */
-    public function interleave(...$collections)
-    {
-        return interleave($this->getItems(), ...$collections);
-    }
-
-    /**
      * Returns an infinite lazy collection of items in this collection repeated infinitely.
      *
      * @return Collection
@@ -666,18 +643,6 @@ trait CollectionTrait
         return only($this->getItems(), $keys);
     }
 
-    /**
-     * Returns a lazy collection of items that are in $this but are not in any of the other arguments. Note that the
-     * ...$collections are iterated non-lazily.
-     *
-     * @param array|\Traversable ...$collections
-     * @return Collection
-     */
-    public function diff(...$collections)
-    {
-        return diff($this->getItems(), ...$collections);
-    }
-
 
     /**
      * Returns a lazy collection where keys and values are flipped.
@@ -698,20 +663,6 @@ trait CollectionTrait
     public function has($key)
     {
         return has($this->getItems(), $key);
-    }
-
-
-    /**
-     * Returns a lazy collection of non-lazy collections of items from nth position from this collection and each
-     * passed collection. Stops when any of the collections don't have an item at the nth position.
-     *
-     * @param array|\Traversable[] ...$collections
-     * @return Collection
-     */
-    public function zip(...$collections)
-    {
-        array_unshift($collections, $this->getItems());
-        return zip(...$collections);
     }
 
     /**
@@ -744,18 +695,6 @@ trait CollectionTrait
     public function extract($keyPath)
     {
         return \DusanKasan\Knapsack\extract($this->getItems(), $keyPath);
-    }
-
-    /**
-     * Returns a lazy collection of items that are in $collection and all the other arguments, indexed by the keys from
-     * the first collection. Note that the ...$collections are iterated non-lazily.
-     *
-     * @param array|\Traversable[] ...$collections
-     * @return Collection
-     */
-    public function intersect(...$collections)
-    {
-        return intersect($this->getItems(), ...$collections);
     }
 
 

@@ -267,25 +267,6 @@ function filter($collection, callable $function = null)
 }
 
 /**
- * Returns a lazy collection with items from all $collections passed as argument appended together
- *
- * @param array|Traversable ...$collections
- * @return Collection
- */
-function concat(...$collections)
-{
-    $generatorFactory = function () use ($collections) {
-        foreach ($collections as $collection) {
-            foreach ($collection as $key => $value) {
-                yield $key => $value;
-            }
-        }
-    };
-
-    return new Collection($generatorFactory);
-}
-
-/**
  * Reduces the collection to single value by iterating over the collection and calling $reduction while
  * passing $startValue and current key/item as parameters. The output of $function is used as $startValue in
  * next iteration. The output of $function on last element is the return value of this function.
@@ -739,40 +720,6 @@ function interpose($collection, $separator)
 }
 
 /**
- * Returns a lazy collection of first item from first collection, first item from second, second from first and
- * so on. Accepts any number of collections.
- *
- * @param array|Traversable ...$collections
- * @return Collection
- */
-function interleave(...$collections)
-{
-    $generatorFactory = function () use ($collections) {
-        $normalizedCollection = array_map(
-            function ($collection) {
-                $traversable = new Collection($collection);
-                $traversable->rewind();
-                return $traversable;
-            },
-            $collections
-        );
-
-        do {
-            $valid = false;
-            foreach ($normalizedCollection as $collection) {
-                if ($collection->valid()) {
-                    yield $collection->key() => $collection->current();
-                    $collection->next();
-                    $valid = true;
-                }
-            }
-        } while ($valid);
-    };
-
-    return new Collection($generatorFactory);
-}
-
-/**
  * Returns a lazy collection of items in $collection with $value added as first element. If $key is not provided
  * it will be next integer index.
  *
@@ -981,50 +928,6 @@ function takeNth($collection, $step)
 
             $index++;
         }
-    };
-
-    return new Collection($generatorFactory);
-}
-
-/**
- * Returns a lazy collection of collections of $numberOfItems items each, at $step step
- * apart. If $step is not supplied, defaults to $numberOfItems, i.e. the partitions
- * do not overlap. If a $padding collection is supplied, use its elements as
- * necessary to complete last partition up to $numberOfItems items. In case there are
- * not enough padding elements, return a partition with less than $numberOfItems items.
- *
- * @param array|Traversable $collection
- * @param $numberOfItems
- * @param int $step
- * @param array|Traversable $padding
- * @return Collection
- */
-function partition($collection, $numberOfItems, $step = -1, $padding = [])
-{
-    $generatorFactory = function () use ($collection, $numberOfItems, $step, $padding) {
-        $buffer = [];
-        $itemsToSkip = 0;
-        $tmpStep = $step ?: $numberOfItems;
-
-        foreach ($collection as $key => $value) {
-            if (count($buffer) == $numberOfItems) {
-                yield dereferenceKeyValue($buffer);
-
-                $buffer = array_slice($buffer, $tmpStep);
-                $itemsToSkip =  $tmpStep - $numberOfItems;
-            }
-
-            if ($itemsToSkip <= 0) {
-                $buffer[] = [$key, $value];
-            } else {
-                $itemsToSkip--;
-            }
-        }
-
-        yield take(
-            concat(dereferenceKeyValue($buffer), $padding),
-            $numberOfItems
-        );
     };
 
     return new Collection($generatorFactory);
@@ -1265,50 +1168,6 @@ function only($collection, $keys)
 }
 
 /**
- * Returns a lazy collection of items that are in $collection but are not in any of the other arguments. Note that the
- * ...$collections are iterated non-lazily.
- *
- * @param array|Traversable $collection
- * @param array|Traversable ...$collections
- * @return Collection
- */
-function diff($collection, ...$collections)
-{
-    $valuesToCompare = toArray(values(concat(...$collections)));
-    $generatorFactory = function () use ($collection, $valuesToCompare) {
-        foreach ($collection as $key => $value) {
-            if (!in_array($value, $valuesToCompare)) {
-                yield $key => $value;
-            }
-        }
-    };
-
-    return new Collection($generatorFactory);
-}
-
-/**
- * Returns a lazy collection of items that are in $collection and all the other arguments, indexed by the keys from the
- * first collection. Note that the ...$collections are iterated non-lazily.
- *
- * @param array|Traversable $collection
- * @param array|Traversable ...$collections
- * @return Collection
- */
-function intersect($collection, ...$collections)
-{
-    $valuesToCompare = toArray(values(concat(...$collections)));
-    $generatorFactory = function () use ($collection, $valuesToCompare) {
-        foreach ($collection as $key => $value) {
-            if (in_array($value, $valuesToCompare)) {
-                yield $key => $value;
-            }
-        }
-    };
-
-    return new Collection($generatorFactory);
-}
-
-/**
  * Returns a lazy collection where keys and values are flipped.
  *
  * @param array|Traversable $collection
@@ -1340,48 +1199,6 @@ function has($collection, $key)
     } catch (ItemNotFound $e) {
         return false;
     }
-}
-
-/**
- * Returns a lazy collection of non-lazy collections of items from nth position from each passed collection. Stops when
- * any of the collections don't have an item at the nth position.
- *
- * @param array|Traversable[] ...$collections
- * @return Collection
- */
-function zip(...$collections)
-{
-    $normalizedCollections = [];
-    foreach ($collections as $collection) {
-        $traversable = new Collection($collection);
-        $traversable->rewind();
-        $normalizedCollections[] = $traversable;
-    }
-
-    $generatorFactory = function () use ($normalizedCollections) {
-        while (true) {
-            $isMissingItems = false;
-            $zippedItem = new Collection([]);
-
-            foreach ($normalizedCollections as $collection) {
-                if (!$collection->valid()) {
-                    $isMissingItems = true;
-                    break;
-                }
-
-                $zippedItem = append($zippedItem, $collection->current(), $collection->key());
-                $collection->next();
-            }
-
-            if (!$isMissingItems) {
-                yield $zippedItem;
-            } else {
-                break;
-            }
-        }
-    };
-
-    return new Collection($generatorFactory);
 }
 
 /**
