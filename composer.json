@@ -1,5 +1,5 @@
 {
-  "name": "dusank/knapsack",
+  "name": "blackbit/knapsack",
   "license": "MIT",
   "type": "library",
   "description": "Collection library for PHP",
@@ -10,6 +10,12 @@
       "name": "Dusan Kasan",
       "email": "dusan@kasan.sk",
       "homepage": "http://kasan.sk",
+      "role": "Developer"
+    },
+    {
+      "name": "Jan Walther",
+      "email": "jan.walther@blackbit.de",
+      "homepage": "http://www.blackbit.de",
       "role": "Developer"
     }
   ],
